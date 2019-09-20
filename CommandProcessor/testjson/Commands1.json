@@ -1,0 +1,31 @@
+{
+    "Version": 1,
+    "Commands": [
+        {
+            
+            "No" : 1,
+            "command": "ls",
+            "dependency" : []
+        },
+        {
+            "No" : 2,
+            "command": "sh",
+            "dependency":  []
+        },
+        {
+            "No" :3,
+            "command": "sleep",
+            "dependency":  [ 1, 2 ]
+        },
+        {
+            "No" : 4,
+            "command": "sh",
+            "dependency":  [ 2,3 ]
+        },
+        {
+            "No" : 5,
+            "command": "sh",
+            "dependency":  [ 1 ]
+        }
+    ]
+}
