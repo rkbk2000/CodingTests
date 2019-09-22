@@ -1,12 +1,20 @@
 #include <string>
 #include <stack>
-
-int solution(std::string& S);
+#include <array>
 
 //S is empty;
 //S has the form "(U)" or "[U]" or "{U}" where U is a properly nested string;
 //S has the form "VW" where Vand W are properly nested strings.
 //For example, the string "{[()()]}" is properly nested but "([)()]" is not.
+
+int matches(std::stack<char>& chars, char expected) {
+   char startb = chars.top();
+   chars.pop();
+   if (startb != expected) {
+      return 0;
+   }
+   return 1;
+}
 
 int solution(std::string& S)
 {
@@ -20,37 +28,15 @@ int solution(std::string& S)
          case '[':
             chars.push(c);
             break;
-         case ')':
-         {
-            char startb = chars.top();
-            chars.pop();
-            if (startb != '(') {
-               result = 0;
-               break;
-            }
+         case ')': result = matches(chars, '(');
+            break;
+         case ']': result = matches(chars, '[');
+            break;
+         case '}': result = matches(chars, '{');
+            break;
          }
-         break;
-         case ']':
-         {
-            char startb = chars.top();
-            chars.pop();
-            if (startb != '[') {
-               result = 0;
-               break;
-            }
-         }
-         break;
-
-         case '}':
-         {
-            char startb = chars.top();
-            chars.pop();
-            if (startb != '{') {
-               result = 0;
-               break;
-            }
-         }
-         break;
+         if (!result) {
+            break;
          }
       }
    }
