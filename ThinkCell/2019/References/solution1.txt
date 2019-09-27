@@ -1,0 +1,118 @@
+#include <assert.h>
+#include <map>
+#include <limits>
+#include <vector>
+#include <iterator>
+#include <stdlib.h>
+#include <iostream>
+
+template<class K, class V>
+class interval_map {
+    friend void IntervalMapTest();
+
+private:
+    std::map<K,V> m_map;
+
+public:
+    // constructor associates whole range of K with val by inserting (K_min, val)
+    // into the map
+    interval_map( V const& val) {
+        m_map.insert(m_map.begin(),std::make_pair(std::numeric_limits<K>::lowest(),val));
+    };
+
+    // Assign value val to interval [keyBegin, keyEnd). 
+    // Overwrite previous values in this interval. 
+    // Do not change values outside this interval.
+    // Conforming to the C++ Standard Library conventions, the interval 
+    // includes keyBegin, but excludes keyEnd.
+    // If !( keyBegin < keyEnd ), this designates an empty interval, 
+    // and assign must do nothing.
+    void assign( K const& keyBegin, K const& keyEnd, const V& val ) {
+        
+    }
+
+    // look-up of the value associated with key
+    V const& operator[]( K const& key ) const {
+        return ( --m_map.upper_bound(key) )->second;
+    }
+};
+
+template<class K, class V>
+class naive_interval_map {
+
+    std::vector<V> data;
+    const int MX = 1000;
+
+public:
+    // constructor associates whole range of K with val by inserting (K_min, val)
+    // into the map
+    naive_interval_map( V const& val) {
+        for (int i = 0; i < MX; i++) {
+            data.push_back(val);
+        }
+    };
+
+    void assign( K const& keyBegin, K const& keyEnd, const V& val ) {
+        for (auto i = keyBegin; i < keyEnd; i++) {
+            data[i] = val;
+        }
+    }
+
+    // look-up of the value associated with key
+    V const& operator[]( K const& key ) const {
+        return data[key];
+    }
+
+    std::map<K, V> keys() {
+        std::map<K, V> res;
+        auto mn = std::numeric_limits<K>::lowest();
+        res[mn] = data[0];
+        for (auto i = mn; i < MX - 1; i++) {
+            if (data[i] != data[i + 1]) {
+                res[i + 1] = data[i + 1];
+            }
+        }
+        return res;
+    }
+};
+
+// Many solutions we receive are incorrect. Consider using a randomized test
+// to discover the cases that your implementation does not handle correctly.
+// We recommend to implement a function IntervalMapTest() here that tests the
+// functionality of the interval_map, for example using a map of unsigned int
+// intervals to char.
+template<class K, class V>
+std::map<K, V> print_map(std::map<K, V> mp, const char * message) {
+    std::cout << message;
+    for (auto k : mp) {
+        std::cout << "(" << k.first << "," << k.second << ") ";
+    }
+    std::cout << std::endl;
+    return mp;
+}
+
+void IntervalMapTest() {
+    const int mx = 500;
+    const int vals = 10;
+    interval_map<unsigned short int, int> mp(0);
+    naive_interval_map<unsigned short int, int> naive(0);
+    for (int i = 0; i < 100000; i++) {
+        int from = rand() % mx;
+        int to = rand() % mx;
+        int val = rand() % vals;
+        std::cout << "Test " << i + 1 << "[" << from << ", " << to << ") -> " << val << std::endl;
+        mp.assign(from, to, val);
+        naive.assign(from, to, val);
+        auto m1 = print_map(mp.m_map, "Actual   ");
+        auto m2 = print_map(naive.keys(), "Expected ");
+        if (m1 != m2) {
+            std::cout << "VI OBOSRALIS";
+            return;
+        }
+    }
+}
+
+int main(int argc, char* argv[]) {
+    IntervalMapTest();
+    return 0;
+}

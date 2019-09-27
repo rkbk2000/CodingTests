@@ -1,0 +1,89 @@
+// interval_map.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+
+#include <map>
+#include <limits>
+
+template<typename K, typename V>
+
+class interval_map
+{
+	V _value;
+	std::map<K,V> m_map;
+
+public:
+    // constructor associates whole range of K with val by inserting (K_min, val)
+    // into the map
+    interval_map( V const& val)
+	{
+		_value = val;
+        m_map.insert(m_map.end(),std::make_pair(std::numeric_limits<K>::lowest(),val));
+    }
+
+    // Assign value val to interval [keyBegin, keyEnd).
+    // Overwrite previous values in this interval.
+    // Conforming to the C++ Standard Library conventions, the interval
+    // includes keyBegin, but excludes keyEnd.
+    // If !( keyBegin < keyEnd ), this designates an empty interval,
+    // and assign must do nothing.
+
+    void assign( K const& keyBegin, K const& keyEnd, V const& val )
+	{
+		if((keyBegin < std::numeric_limits<K>::lowest()) || (keyEnd > std::numeric_limits<K>::max()) || (!(keyBegin < keyEnd)))
+			return;
+
+		V v;
+
+		//std::map<K,V>::iterator it0, it1;
+
+		auto it0 = m_map.lower_bound(keyBegin);
+		auto it1 = m_map.upper_bound(std::move(keyEnd));
+		if(it1 == m_map.end())
+			v = _value;
+		else
+			v = std::prev(it1)->second;
+		m_map.insert(it1, std::make_pair(std::move(keyEnd), v));
+		m_map.erase(it0, it1);
+		m_map.insert(it1, std::make_pair(std::move(keyBegin), std::move(val)));
+    }
+
+    // look-up of the value associated with key
+    V const& operator[]( K const& key ) const
+	{
+        return ( --m_map.upper_bound(key) )->second;
+    }
+};
+
+// Many solutions we receive are incorrect. Consider using a randomized test
+// to discover the cases that your implementation does not handle correctly.
+// We recommend to implement a test function that tests the functionality of
+// the interval_map, for example using a map of unsigned int intervals to char.
+
+int main(int argc, char **argv)
+{
+	interval_map<int, int> m(7);
+
+	m.assign(-10, 4, 8);
+
+	m.assign(18, 19, 14);
+
+	m.assign(-1, 6, 9);
+
+	m.assign(2, 5, 10);
+
+	m.assign(3, 9, 11);
+
+	m.assign(6, 8, 12);
+
+	m.assign(7, 16, 13);
+
+	m.assign(18, 18, 14); //error
+
+
+	for(int i = -20; i < 20; i++)
+		printf("%d) %d.\n", i, m[i]);
+
+	return 0;
+}
